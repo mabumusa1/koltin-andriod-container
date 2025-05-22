@@ -5,7 +5,9 @@
         "ghcr.io/devcontainers/features/java:latest": {
             "installGradle": true,
             "gradleVersion": "latest"
-        }
+        },
+        "ghcr.io/devcontainers-extra/features/kotlin-sdkman:2": {},
+        "ghcr.io/NordcomInc/devcontainer-features/android-sdk:1": {}
     },
     "customizations": {
         "vscode": {
