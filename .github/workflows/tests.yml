@@ -15,10 +15,10 @@ jobs:
     
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         
       - name: Set up JDK 17
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'ms'
@@ -37,7 +37,7 @@ jobs:
       # Commented out as CodeCov is not set up yet
       # - name: Upload Coverage to Codecov
       #   if: success()
-      #   uses: codecov/codecov-action@v3
+      #   uses: codecov/codecov-action@v4
       #   with:
       #     token: ${{ secrets.CODECOV_TOKEN }}
       #     files: ./app/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml

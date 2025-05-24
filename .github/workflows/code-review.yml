@@ -18,18 +18,18 @@ jobs:
       pull-requests: write
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
       
       - name: Run PR code analysis
-        uses: gitleaks/gitleaks-action@v2
+        uses: gitleaks/gitleaks-action@v2.3.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
       
       - name: Analyze code quality changes
-        uses: reviewdog/action-suggester@v1
+        uses: reviewdog/action-suggester@v1.9.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           tool_name: code-review-assistant
