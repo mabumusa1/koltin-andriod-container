@@ -1,6 +1,10 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+    id("jacoco")
+    id("io.gitlab.arturbosch.detekt")
+    id("org.jlleitschuh.gradle.ktlint")
+    id("org.jetbrains.dokka")
 }
 
 android {
@@ -25,6 +29,39 @@ android {
                 "proguard-rules.pro"
             )
         }
+        debug {
+            isTestCoverageEnabled = true
+        }
+    }
+    
+    // Configure lint to be strict and prevent poor code quality
+    lint {
+        // Set to true to abort the build if there are errors
+        abortOnError = true
+        // Set to true to check all issues, including those that are off by default
+        checkAllWarnings = true
+        // Make lint report any warning as an error
+        warningsAsErrors = true
+        // Generate a text report to the console
+        textReport = true
+        // Generate XML and HTML reports for CI
+        xmlReport = true
+        htmlReport = true
+        // Configure the paths where reports are written
+        xmlOutput = file("${project.buildDir}/reports/lint-results.xml")
+        htmlOutput = file("${project.buildDir}/reports/lint-results.html")
+        // Specify a baseline file - once created, lint will only report new issues
+        baseline = file("lint-baseline.xml")
+        // Disable lint checks that are too noisy
+        disable += listOf("InvalidPackage")
+        // List of issues we want to be extra strict about
+        error += listOf(
+            "Accessibility",
+            "MissingTranslation",
+            "HardcodedText",
+            "Internationalization",
+            "Typos"
+        )
     }
     
     compileOptions {
@@ -39,6 +76,11 @@ android {
     buildFeatures {
         viewBinding = true
     }
+
+    testOptions {
+        unitTests.isIncludeAndroidResources = true
+        unitTests.isReturnDefaultValues = true
+    }
 }
 
 dependencies {
@@ -48,7 +90,71 @@ dependencies {
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     
+    // Unit testing
     testImplementation(libs.junit)
+    testImplementation(libs.mockito.core)
+    testImplementation(libs.robolectric)
+    testImplementation(libs.androidx.test.core)
+    
+    // Instrumented testing
     androidTestImplementation(libs.androidx.test.ext)
     androidTestImplementation(libs.androidx.test.espresso)
+    androidTestImplementation(libs.androidx.test.runner)
+    androidTestImplementation(libs.androidx.test.rules)
+    androidTestImplementation(libs.mockito.android)
+}
+
+// JaCoCo configuration for test coverage reports
+tasks.withType<Test> {
+    configure<JacocoTaskExtension> {
+        isIncludeNoLocationClasses = true
+        excludes = listOf("jdk.internal.*")
+    }
+}
+
+// Task to generate test coverage report
+tasks.register<JacocoReport>("jacocoTestReport") {
+    dependsOn("testDebugUnitTest")
+    
+    reports {
+        xml.required.set(true)
+        html.required.set(true)
+    }
+    
+    val fileFilter = listOf(
+        "**/R.class",
+        "**/R$*.class",
+        "**/BuildConfig.*",
+        "**/Manifest*.*",
+        "**/*Test*.*",
+        "android/**/*.*"
+    )
+    
+    val debugTree = fileTree("${project.buildDir}/tmp/kotlin-classes/debug") {
+        exclude(fileFilter)
+    }
+    
+    val mainSrc = "${project.projectDir}/src/main/kotlin"
+    
+    sourceDirectories.setFrom(files(mainSrc))
+    classDirectories.setFrom(files(debugTree))
+    executionData.setFrom(fileTree(project.buildDir) {
+        include("jacoco/testDebugUnitTest.exec")
+    })
+}
+
+// Static analysis configuration
+detekt {
+    buildUponDefaultConfig = true
+    allRules = false
+    config = files("${project.rootDir}/config/detekt/detekt.yml")
+}
+
+tasks.withType<io.gitlab.arturbosch.detekt.Detekt>().configureEach {
+    reports {
+        html.required.set(true)
+        xml.required.set(true)
+        txt.required.set(false)
+        sarif.required.set(false)
+    }
 }

@@ -1,0 +1,54 @@
+name: Android Code Quality
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  # Allow manual triggering of the workflow
+  workflow_dispatch:
+
+jobs:
+  code-quality:
+    name: Lint and Code Quality
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'ms'
+          cache: gradle
+      
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+        
+      - name: Run Android Lint
+        # Use the existing baseline file to only fail on new issues
+        run: |
+          echo "Running lint with baseline from repository"
+          ./gradlew lintDebug
+        # abortOnError=true in build.gradle.kts will make the build fail if lint finds new issues beyond the baseline
+      
+      - name: Run Ktlint
+        run: ./gradlew ktlintCheck
+        
+      - name: Run Detekt
+        run: ./gradlew detekt
+          
+      - name: Upload Reports
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: code-quality-reports
+          path: |
+            app/build/reports/lint-results*.html
+            app/build/reports/lint-results*.xml
+            build/reports/ktlint/
+            app/build/reports/ktlint/
+            build/reports/detekt/
+            app/build/reports/detekt/
