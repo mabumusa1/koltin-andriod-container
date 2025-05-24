@@ -30,7 +30,7 @@ jobs:
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v2
         with:
-          gradle-version: 8.7
+          gradle-version: 8.14
       
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
@@ -54,7 +54,7 @@ jobs:
           keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
           keyPassword: ${{ secrets.KEY_PASSWORD }}
         env:
-          BUILD_TOOLS_VERSION: "34.0.0"
+          BUILD_TOOLS_VERSION: "35.0.0"
       
       # Verify the signed APK
       - name: Verify APK
@@ -62,7 +62,7 @@ jobs:
           APK_PATH=${{ steps.sign_apk.outputs.signedReleaseFile }}
           echo "Verifying APK: $APK_PATH"
           # Run basic verification that the APK is valid
-          $ANDROID_HOME/build-tools/34.0.0/apksigner verify --verbose $APK_PATH
+          $ANDROID_HOME/build-tools/35.0.0/apksigner verify --verbose $APK_PATH
       
       - name: Upload Release APK
         uses: actions/upload-artifact@v4

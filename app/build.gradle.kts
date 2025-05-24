@@ -9,12 +9,12 @@ plugins {
 
 android {
     namespace = "karage.app"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "karage.app"
         minSdk = 24
-        targetSdk = 34
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 
@@ -30,10 +30,10 @@ android {
             )
         }
         debug {
-            isTestCoverageEnabled = true
+            enableUnitTestCoverage = true
         }
     }
-    
+
     // Configure lint to be strict and prevent poor code quality
     lint {
         // Set to true to abort the build if there are errors
@@ -48,8 +48,8 @@ android {
         xmlReport = true
         htmlReport = true
         // Configure the paths where reports are written
-        xmlOutput = file("${project.buildDir}/reports/lint-results.xml")
-        htmlOutput = file("${project.buildDir}/reports/lint-results.html")
+        xmlOutput = file("${layout.buildDirectory.get()}/reports/lint-results.xml")
+        htmlOutput = file("${layout.buildDirectory.get()}/reports/lint-results.html")
         // Specify a baseline file - once created, lint will only report new issues
         baseline = file("lint-baseline.xml")
         // Disable lint checks that are too noisy
@@ -63,16 +63,16 @@ android {
             "Typos"
         )
     }
-    
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-    
+
     kotlinOptions {
         jvmTarget = "17"
     }
-    
+
     buildFeatures {
         viewBinding = true
     }
@@ -89,13 +89,13 @@ dependencies {
     implementation(libs.material)
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
-    
+
     // Unit testing
     testImplementation(libs.junit)
     testImplementation(libs.mockito.core)
     testImplementation(libs.robolectric)
     testImplementation(libs.androidx.test.core)
-    
+
     // Instrumented testing
     androidTestImplementation(libs.androidx.test.ext)
     androidTestImplementation(libs.androidx.test.espresso)
@@ -110,17 +110,18 @@ tasks.withType<Test> {
         isIncludeNoLocationClasses = true
         excludes = listOf("jdk.internal.*")
     }
+    finalizedBy("jacocoTestReport")
 }
 
 // Task to generate test coverage report
 tasks.register<JacocoReport>("jacocoTestReport") {
     dependsOn("testDebugUnitTest")
-    
+
     reports {
         xml.required.set(true)
         html.required.set(true)
     }
-    
+
     val fileFilter = listOf(
         "**/R.class",
         "**/R$*.class",
@@ -129,25 +130,27 @@ tasks.register<JacocoReport>("jacocoTestReport") {
         "**/*Test*.*",
         "android/**/*.*"
     )
-    
-    val debugTree = fileTree("${project.buildDir}/tmp/kotlin-classes/debug") {
+
+    val debugTree = fileTree("${layout.buildDirectory.get()}/tmp/kotlin-classes/debug") {
         exclude(fileFilter)
     }
-    
+
     val mainSrc = "${project.projectDir}/src/main/kotlin"
-    
+
     sourceDirectories.setFrom(files(mainSrc))
     classDirectories.setFrom(files(debugTree))
-    executionData.setFrom(fileTree(project.buildDir) {
-        include("jacoco/testDebugUnitTest.exec")
-    })
+    executionData.setFrom(
+        fileTree("${layout.buildDirectory.get()}") {
+            include("jacoco/testDebugUnitTest.exec")
+        }
+    )
 }
 
 // Static analysis configuration
 detekt {
     buildUponDefaultConfig = true
     allRules = false
-    config = files("${project.rootDir}/config/detekt/detekt.yml")
+    config.setFrom(files("${project.rootDir}/config/detekt/detekt.yml"))
 }
 
 tasks.withType<io.gitlab.arturbosch.detekt.Detekt>().configureEach {
