@@ -37,8 +37,9 @@ jobs:
         uses: android-actions/setup-android@v3
         with:
           cmdline-tools-version: latest
-          platform-version: 34
-          build-tools-version: 34.0.0
+          packages: |
+            platforms;android-34
+            build-tools;34.0.0
       
       - name: Generate Dokka documentation
         run: ./gradlew dokkaHtml
