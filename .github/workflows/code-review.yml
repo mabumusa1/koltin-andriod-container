@@ -29,16 +29,8 @@ jobs:
           distribution: 'microsoft'
           cache: gradle
           
-      - name: Setup Gradle
-        uses: gradle/gradle-build-action@v2
-        with:
-          gradle-version: 8.14
-      
       - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-        with:
-          java-version: '17'
-          distribution: 'microsoft'          
+        uses: android-actions/setup-android@v3          
       
       - name: Run PR code analysis
         uses: gitleaks/gitleaks-action@v2.3.0

@@ -19,16 +19,8 @@ jobs:
           distribution: 'microsoft'
           cache: gradle
           
-      - name: Setup Gradle
-        uses: gradle/gradle-build-action@v2
-        with:
-          gradle-version: 8.14
-      
       - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-        with:
-          java-version: '17'
-          distribution: 'microsoft'          
+        uses: android-actions/setup-android@v3          
                 
       - name: PR title check
         uses: amannn/action-semantic-pull-request@v5
