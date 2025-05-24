@@ -1,14 +1,21 @@
 {
     "name": "Kotlin Android Development",
-    "image": "mcr.microsoft.com/vscode/devcontainers/java",
+    "image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
     "features": {
-        "ghcr.io/devcontainers/features/java": {
+        "ghcr.io/devcontainers/features/java:1":{
+            "version": "17",
             "installGradle": true,
-            "gradleVersion": "latest",
-            "version": "17"
+            "gradleVersion": "8.7",
+            "jdkDistro": "ms"
         },
-        "ghcr.io/devcontainers-extra/features/kotlin-sdkman:2": {},
-        "ghcr.io/NordcomInc/devcontainer-features/android-sdk:1": {}
+        "ghcr.io/devcontainers-extra/features/kotlin-sdkman:2": {
+            "jdkVersion": "17",
+            "jdkDistro": "ms"
+        },
+        "ghcr.io/NordcomInc/devcontainer-features/android-sdk:1": {
+            "platform": "34",
+            "build_tools": "34.0.0"
+        }
     },
     "customizations": {
         "vscode": {
@@ -28,8 +35,8 @@
                 "kotlin.languageServer.enabled": true,
                 "kotlin.debugAdapter.enabled": true,
                 "java.compile.nullAnalysis.mode": "automatic",
-                "java.jdt.ls.java.home": "/usr/local/sdkman/candidates/java/17.0.9-tem",
-                "gradle.javaHome": "/usr/local/sdkman/candidates/java/17.0.9-tem"
+                "java.jdt.ls.java.home": "/usr/local/sdkman/candidates/java/17.0.15-ms",
+                "gradle.javaHome": "/usr/local/sdkman/candidates/java/17.0.15-ms"
             }
         }
     },
@@ -44,9 +51,8 @@
     ],
     "mounts": [
         "source=/dev/bus/usb,target=/dev/bus/usb,type=bind"
-    ],
-    "postCreateCommand": "if [ ! -d \"${ANDROID_HOME}/platforms/android-34\" ] || [ ! -d \"${ANDROID_HOME}/build-tools/34.0.0\" ]; then echo 'Installing Android SDK components...' && yes | sdkmanager --licenses && sdkmanager 'platform-tools' 'platforms;android-34' 'build-tools;34.0.0' 'extras;google;m2repository' 'extras;android;m2repository' && echo 'Android SDK components installed successfully!'; else echo 'Android SDK components already installed, skipping installation.'; fi && echo 'Container is ready for Kotlin Android development!' && gradle --version && sudo apt-get update && sudo apt-get install -y libusb-1.0-0",
+    ],    
     "remoteEnv": {
         "PATH": "${containerEnv:PATH}:${containerEnv:ANDROID_HOME}/platform-tools:${containerEnv:ANDROID_HOME}/cmdline-tools/latest/bin:${containerEnv:GRADLE_HOME}/bin"
-    }
+    }    
 }
