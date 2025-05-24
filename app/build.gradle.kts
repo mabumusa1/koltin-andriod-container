@@ -9,12 +9,12 @@ plugins {
 
 android {
     namespace = "karage.app"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "karage.app"
         minSdk = 24
-        targetSdk = 35
+        targetSdk = 36
         versionCode = 1
         versionName = "1.0"
 
@@ -26,7 +26,7 @@ android {
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
             )
         }
         debug {
@@ -57,13 +57,14 @@ android {
         // Disable lint checks that are too noisy
         disable += listOf("InvalidPackage")
         // List of issues we want to be extra strict about
-        error += listOf(
-            "Accessibility",
-            "MissingTranslation",
-            "HardcodedText",
-            "Internationalization",
-            "Typos"
-        )
+        error +=
+            listOf(
+                "Accessibility",
+                "MissingTranslation",
+                "HardcodedText",
+                "Internationalization",
+                "Typos",
+            )
     }
 
     compileOptions {
@@ -126,18 +127,20 @@ tasks.register<JacocoReport>("jacocoTestReport") {
         html.required.set(true)
     }
 
-    val fileFilter = listOf(
-        "**/R.class",
-        "**/R$*.class",
-        "**/BuildConfig.*",
-        "**/Manifest*.*",
-        "**/*Test*.*",
-        "android/**/*.*"
-    )
+    val fileFilter =
+        listOf(
+            "**/R.class",
+            "**/R$*.class",
+            "**/BuildConfig.*",
+            "**/Manifest*.*",
+            "**/*Test*.*",
+            "android/**/*.*",
+        )
 
-    val debugTree = fileTree("${layout.buildDirectory.get()}/tmp/kotlin-classes/debug") {
-        exclude(fileFilter)
-    }
+    val debugTree =
+        fileTree("${layout.buildDirectory.get()}/tmp/kotlin-classes/debug") {
+            exclude(fileFilter)
+        }
 
     val mainSrc = "${project.projectDir}/src/main/kotlin"
 
@@ -146,7 +149,7 @@ tasks.register<JacocoReport>("jacocoTestReport") {
     executionData.setFrom(
         fileTree("${layout.buildDirectory.get()}") {
             include("jacoco/testDebugUnitTest.exec")
-        }
+        },
     )
 }
 
