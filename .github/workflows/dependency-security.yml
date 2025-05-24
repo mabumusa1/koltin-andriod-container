@@ -35,7 +35,7 @@ jobs:
           distribution: 'microsoft'
 
       - name: Check for outdated dependencies
-        run: ./gradlew dependencyUpdates -Drevision=release
+        run: ./gradlew dependencyUpdates -Drevision=release --no-configuration-cache
       
       - name: Upload dependency report
         uses: actions/upload-artifact@v4

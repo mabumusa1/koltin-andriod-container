@@ -40,7 +40,7 @@ jobs:
           distribution: 'microsoft'
       
       - name: Generate Dokka documentation
-        run: ./gradlew dokkaHtml
+        run: ./gradlew dokkaHtml --no-configuration-cache
       
       - name: Upload documentation
         uses: actions/upload-artifact@v4

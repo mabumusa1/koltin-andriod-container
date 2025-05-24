@@ -30,7 +30,9 @@ android {
             )
         }
         debug {
-            enableUnitTestCoverage = true
+            // Disable built-in coverage to avoid configuration cache issues
+            // We'll use JaCoCo plugin manually
+            enableUnitTestCoverage = false
         }
     }
 
@@ -110,11 +112,13 @@ tasks.withType<Test> {
         isIncludeNoLocationClasses = true
         excludes = listOf("jdk.internal.*")
     }
-    finalizedBy("jacocoTestReport")
 }
 
 // Task to generate test coverage report
 tasks.register<JacocoReport>("jacocoTestReport") {
+    group = "reporting"
+    description = "Generate Jacoco coverage reports for the debug build."
+
     dependsOn("testDebugUnitTest")
 
     reports {

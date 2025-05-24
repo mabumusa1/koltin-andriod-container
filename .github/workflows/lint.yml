@@ -42,14 +42,14 @@ jobs:
         # Use the existing baseline file to only fail on new issues
         run: |
           echo "Running lint with baseline from repository"
-          ./gradlew lintDebug
+          ./gradlew lintDebug --no-configuration-cache
         # abortOnError=true in build.gradle.kts will make the build fail if lint finds new issues beyond the baseline
       
       - name: Run Ktlint
-        run: ./gradlew ktlintCheck
+        run: ./gradlew ktlintCheck --no-configuration-cache
         
       - name: Run Detekt
-        run: ./gradlew detekt
+        run: ./gradlew detekt --no-configuration-cache
           
       - name: Upload Reports
         if: always()

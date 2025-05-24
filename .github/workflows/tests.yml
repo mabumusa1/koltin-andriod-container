@@ -39,11 +39,11 @@ jobs:
           distribution: 'microsoft'
 
       - name: Run Unit Tests
-        run: ./gradlew testDebugUnitTest
+        run: ./gradlew testDebugUnitTest --no-configuration-cache
       
       - name: Generate Code Coverage Report
         if: success()
-        run: ./gradlew jacocoTestReport
+        run: ./gradlew jacocoTestReport --no-configuration-cache
       
       # Commented out as CodeCov is not set up yet
       # - name: Upload Coverage to Codecov
