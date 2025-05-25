@@ -6,7 +6,7 @@ plugins {
     alias(libs.plugins.gradle.versions)
     id("io.gitlab.arturbosch.detekt") version "1.23.6" apply false
     id("org.jlleitschuh.gradle.ktlint") version "12.1.2" apply false
-    id("org.jetbrains.dokka") version "2.0.0" apply false
+    id("org.jetbrains.dokka") version "1.9.20" apply false
 }
 
 // Configure dependency updates plugin

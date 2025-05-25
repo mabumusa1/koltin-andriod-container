@@ -1,3 +1,5 @@
+import java.net.URL
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -243,33 +245,27 @@ tasks.withType<io.gitlab.arturbosch.detekt.Detekt>().configureEach {
     }
 }
 
-// Dokka V2 configuration for API documentation
-dokka {
-    moduleName.set("Karage App")
-    moduleVersion.set(android.defaultConfig.versionName)
-    
+// Dokka V1 configuration for API documentation
+tasks.withType<org.jetbrains.dokka.gradle.DokkaTask>().configureEach {
     dokkaSourceSets {
-        configureEach {
+        named("main") {
+            moduleName.set("Karage App")
             reportUndocumented.set(false)
             skipEmptyPackages.set(true)
             skipDeprecated.set(false)
-            
+
             // Add package documentation
-            val packagesFile = file("src/main/kotlin/packages.md")
-            if (packagesFile.exists()) {
-                includes.from(packagesFile)
-            }
-            
+            // val packagesFile = file("src/main/kotlin/packages.md")
+            // if (packagesFile.exists()) {
+            //     includes.from(packagesFile)
+            // }
+
             // Include source links to GitHub
             sourceLink {
                 localDirectory.set(file("src/main/kotlin"))
-                remoteUrl.set(uri("https://github.com/your-username/andriodapp/tree/main/app/src/main/kotlin"))
+                remoteUrl.set(URL("https://github.com/your-username/andriodapp/tree/main/app/src/main/kotlin"))
                 remoteLineSuffix.set("#L")
             }
         }
-    }
-    
-    dokkaPublications.html {
-        outputDirectory.set(file("build/dokka/html"))
     }
 }

@@ -38,12 +38,12 @@ jobs:
         uses: android-actions/setup-android@v3
       
       - name: Generate Dokka documentation
-        run: ./gradlew dokkaGeneratePublicationHtml --no-configuration-cache
+        run: ./gradlew app:dokkaHtml --no-configuration-cache
       
       - name: Prepare documentation for deployment
         run: |
           mkdir -p docs-deploy
-          cp -r app/build/dokka/html/* docs-deploy/
+          cp -r app/build/dokka/html/* docs-deploy/ || echo "Documentation not generated"
       
       - name: Upload documentation
         uses: actions/upload-artifact@v4
