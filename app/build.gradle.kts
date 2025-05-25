@@ -247,10 +247,10 @@ tasks.withType<io.gitlab.arturbosch.detekt.Detekt>().configureEach {
 dokka {
     moduleName.set("Karage App")
     moduleVersion.set(android.defaultConfig.versionName)
-    
+
     dokkaSourceSets.configureEach {
         displayName.set("Main")
-        
+
         // Include source links to GitHub
         sourceLink {
             localDirectory.set(file("src/main/kotlin"))
