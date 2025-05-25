@@ -5,10 +5,32 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import karage.app.databinding.ActivityMainBinding
 
+/**
+ * Main activity for the Karage calculator application.
+ * 
+ * This activity provides a simple calculator interface where users can perform
+ * basic arithmetic operations on two numbers.
+ * 
+ * @since 1.0.0
+ */
 class MainActivity : AppCompatActivity() {
+    /**
+     * View binding for the activity layout.
+     */
     private lateinit var binding: ActivityMainBinding
+    
+    /**
+     * Calculator instance for performing arithmetic operations.
+     */
     private val calculator = Calculator()
 
+    /**
+     * Called when the activity is first created.
+     * 
+     * Initializes the activity, sets up view binding, and configures calculator buttons.
+     * 
+     * @param savedInstanceState Bundle containing the activity's previously saved state, or null
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -17,6 +39,12 @@ class MainActivity : AppCompatActivity() {
         setupCalculatorButtons()
     }
 
+    /**
+     * Sets up click listeners for all calculator operation buttons.
+     * 
+     * Each button is configured to perform its respective arithmetic operation
+     * when clicked by the user.
+     */
     private fun setupCalculatorButtons() {
         binding.buttonAdd.setOnClickListener {
             performCalculation { num1, num2 -> calculator.add(num1, num2) }
@@ -35,6 +63,14 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Performs a calculation using the provided operation function.
+     * 
+     * Extracts numbers from the input fields, applies the given operation,
+     * and displays the result. Handles input validation and error cases.
+     * 
+     * @param operation Lambda function that takes two integers and returns a result
+     */
     private fun performCalculation(operation: (Int, Int) -> Int) {
         try {
             val num1 = binding.inputNum1.text.toString().toInt()

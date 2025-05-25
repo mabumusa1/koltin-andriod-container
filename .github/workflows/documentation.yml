@@ -38,7 +38,7 @@ jobs:
         uses: android-actions/setup-android@v3
       
       - name: Generate Dokka documentation
-        run: ./gradlew dokkaGenerate --no-configuration-cache
+        run: ./gradlew dokkaGeneratePublicationHtml --no-configuration-cache
       
       - name: Prepare documentation for deployment
         run: |

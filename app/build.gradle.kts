@@ -247,30 +247,28 @@ tasks.withType<io.gitlab.arturbosch.detekt.Detekt>().configureEach {
 dokka {
     moduleName.set("Karage App")
     moduleVersion.set(android.defaultConfig.versionName)
-
-    dokkaSourceSets.configureEach {
-        displayName.set("Karage App")
-        
-        // Configure source sets
-        sourceRoots.from(file("src/main/kotlin"))
-        
-        // Add package documentation
-        includes.from(file("src/main/kotlin/packages.md"))
-        
-        // Include source links to GitHub
-        sourceLink {
-            localDirectory.set(file("src/main/kotlin"))
-            remoteUrl.set(uri("https://github.com/your-username/andriodapp/tree/main/app/src/main/kotlin"))
-            remoteLineSuffix.set("#L")
+    
+    dokkaSourceSets {
+        configureEach {
+            reportUndocumented.set(false)
+            skipEmptyPackages.set(true)
+            skipDeprecated.set(false)
+            
+            // Add package documentation
+            val packagesFile = file("src/main/kotlin/packages.md")
+            if (packagesFile.exists()) {
+                includes.from(packagesFile)
+            }
+            
+            // Include source links to GitHub
+            sourceLink {
+                localDirectory.set(file("src/main/kotlin"))
+                remoteUrl.set(uri("https://github.com/your-username/andriodapp/tree/main/app/src/main/kotlin"))
+                remoteLineSuffix.set("#L")
+            }
         }
-        
-        // Suppress warnings for missing documentation
-        reportUndocumented.set(false)
-        skipEmptyPackages.set(true)
-        skipDeprecated.set(false)
     }
     
-    // Configure publication settings
     dokkaPublications.html {
         outputDirectory.set(file("build/dokka/html"))
     }

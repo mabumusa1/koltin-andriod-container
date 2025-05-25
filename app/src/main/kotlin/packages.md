@@ -1,43 +1,18 @@
-# Module karage.app
+# Module Karage App
 
-The Karage Android application provides a comprehensive mobile experience.
+The Karage Android application provides a simple calculator interface for performing basic arithmetic operations.
 
 ## Package karage.app
 
-Main application package containing core functionality and entry points.
+Main application package containing the core functionality and entry points for the Karage calculator app.
 
 ### Key Components
 
-- Application class and initialization
-- Main activities and navigation
-- Core business logic
+- **MainActivity**: The main activity that provides the user interface for the calculator
+- **Calculator**: A utility class that performs arithmetic operations with proper error handling
 
-## Package karage.app.ui
-
-User interface components and activities.
-
-### Features
-
-- Modern Material Design UI
-- Responsive layouts
-- Accessibility support
-
-## Package karage.app.data
-
-Data layer components including repositories and data sources.
-
-### Architecture
-
-- Repository pattern implementation
-- Local and remote data sources
-- Data caching and synchronization
-
-## Package karage.app.util
-
-Utility classes and helper functions used throughout the application.
-
-### Utilities
-
-- Extension functions
-- Helper classes
-- Common utilities
+This package demonstrates modern Android development practices including:
+- View binding for safe view access
+- Proper error handling and validation
+- Clean separation of UI and business logic
+- Comprehensive documentation with KDoc
