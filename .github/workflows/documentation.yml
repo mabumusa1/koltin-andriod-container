@@ -40,11 +40,16 @@ jobs:
       - name: Generate Dokka documentation
         run: ./gradlew dokkaGenerateModuleHtml --no-configuration-cache
       
+      - name: Prepare documentation for deployment
+        run: |
+          mkdir -p docs-deploy
+          cp -r app/build/dokka-module/html/module/* docs-deploy/
+      
       - name: Upload documentation
         uses: actions/upload-artifact@v4
         with:
           name: api-documentation
-          path: app/build/dokka-module/html/module/
+          path: docs-deploy/
       
       # Deploy to GitHub Pages using the official action
       - name: Setup Pages
@@ -53,7 +58,7 @@ jobs:
       - name: Upload to GitHub Pages
         uses: actions/upload-pages-artifact@v3
         with:
-          path: app/build/dokka-module/html/module
+          path: docs-deploy
           
       - name: Deploy to GitHub Pages
         id: deployment

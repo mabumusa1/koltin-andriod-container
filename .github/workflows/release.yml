@@ -1,5 +1,10 @@
 name: Release Build & Verification
 
+permissions:
+  contents: write
+  actions: read
+  checks: write
+
 on:
   push:
     tags:
