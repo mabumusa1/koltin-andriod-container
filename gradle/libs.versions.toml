@@ -21,6 +21,9 @@ androidxTestCore = "1.6.1"
 androidxTestRunner = "1.6.2"
 androidxTestRules = "1.6.1"
 
+# Build tools
+gradleVersions = "0.52.0"
+
 [libraries]
 # Android core libraries
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "androidxCore" }
@@ -44,3 +47,4 @@ robolectric = { group = "org.robolectric", name = "robolectric", version.ref = "
 android-application = { id = "com.android.application", version.ref = "androidGradlePlugin" }
 android-library = { id = "com.android.library", version.ref = "androidGradlePlugin" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+gradle-versions = { id = "com.github.ben-manes.versions", version.ref = "gradleVersions" }
