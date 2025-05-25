@@ -10,6 +10,12 @@ on:
       - '**.md'
   workflow_dispatch:
 
+# Add permissions for GitHub Pages deployment
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
 jobs:
   generate-docs:
     name: Generate API Documentation
@@ -40,11 +46,15 @@ jobs:
           name: api-documentation
           path: app/build/dokka/html/
       
-      # Optionally deploy to GitHub Pages
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v4
-        if: github.ref == 'refs/heads/main'
+      # Deploy to GitHub Pages using the official action
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+        
+      - name: Upload to GitHub Pages
+        uses: actions/upload-pages-artifact@v3
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: app/build/dokka/html/
-          destination_dir: api-docs
+          path: app/build/dokka/html/
+          
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

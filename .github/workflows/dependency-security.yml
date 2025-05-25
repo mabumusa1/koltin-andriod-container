@@ -2,7 +2,7 @@ name: Dependency Updates & Security Scan
 
 on:
   schedule:
-    - cron: '0 0 * * 1' # Run weekly on Mondays
+    - cron: '0 0 * * *' # Run daily
   workflow_dispatch: # Allow manual triggering
 
 jobs:
