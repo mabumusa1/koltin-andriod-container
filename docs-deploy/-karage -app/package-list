@@ -1,0 +1,12 @@
+$dokka.format:html-v1
+$dokka.linkExtension:html
+$dokka.location:karage.app////PointingToDeclaration/-karage -app/karage.app/index.html
+$dokka.location:karage.app/Calculator///PointingToDeclaration/-karage -app/karage.app/[-karage -app]-calculator/index.html
+$dokka.location:karage.app/Calculator/Calculator/#/PointingToDeclaration/-karage -app/karage.app/[-karage -app]-calculator/-calculator.html
+$dokka.location:karage.app/Calculator/add/#kotlin.Int#kotlin.Int/PointingToDeclaration/-karage -app/karage.app/[-karage -app]-calculator/add.html
+$dokka.location:karage.app/Calculator/divide/#kotlin.Int#kotlin.Int/PointingToDeclaration/-karage -app/karage.app/[-karage -app]-calculator/divide.html
+$dokka.location:karage.app/Calculator/multiply/#kotlin.Int#kotlin.Int/PointingToDeclaration/-karage -app/karage.app/[-karage -app]-calculator/multiply.html
+$dokka.location:karage.app/Calculator/subtract/#kotlin.Int#kotlin.Int/PointingToDeclaration/-karage -app/karage.app/[-karage -app]-calculator/subtract.html
+$dokka.location:karage.app/MainActivity///PointingToDeclaration/-karage -app/karage.app/[-karage -app]-main-activity/index.html
+$dokka.location:karage.app/MainActivity/MainActivity/#/PointingToDeclaration/-karage -app/karage.app/[-karage -app]-main-activity/-main-activity.html
+karage.app

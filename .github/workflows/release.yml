@@ -68,6 +68,17 @@ jobs:
           echo "KEYSTORE_PASSWORD=${{ secrets.KEY_STORE_PASSWORD }}" >> $GITHUB_ENV
           echo "KEY_ALIAS=${{ secrets.KEY_ALIAS }}" >> $GITHUB_ENV
           echo "KEY_PASSWORD=${{ secrets.KEY_PASSWORD }}" >> $GITHUB_ENV
+          
+          # Set version tag based on environment
+          if [ "${{ github.event.inputs.environment }}" = "staging" ]; then
+            echo "VERSION_TAG=v${{ github.event.inputs.version }}-rc" >> $GITHUB_ENV
+            echo "RELEASE_NAME=Release Candidate v${{ github.event.inputs.version }}-rc" >> $GITHUB_ENV
+            echo "APK_NAME=karage-app-${{ github.event.inputs.version }}-rc-${{ github.event.inputs.environment }}-${{ github.event.inputs.build_type }}" >> $GITHUB_ENV
+          else
+            echo "VERSION_TAG=v${{ github.event.inputs.version }}" >> $GITHUB_ENV
+            echo "RELEASE_NAME=Release v${{ github.event.inputs.version }}" >> $GITHUB_ENV
+            echo "APK_NAME=karage-app-${{ github.event.inputs.version }}-${{ github.event.inputs.environment }}-${{ github.event.inputs.build_type }}" >> $GITHUB_ENV
+          fi
                 
       - name: Build APK
         run: |
@@ -97,38 +108,69 @@ jobs:
           # Run basic verification that the APK is valid
           $ANDROID_HOME/build-tools/35.0.0/apksigner verify --verbose $APK_PATH
       
+      # Rename APK with proper naming convention
+      - name: Rename APK
+        if: github.event.inputs.build_type == 'release' || github.event.inputs.build_type == 'staging'
+        run: |
+          SIGNED_APK="${{ steps.sign_apk.outputs.signedReleaseFile }}"
+          APK_DIR=$(dirname "$SIGNED_APK")
+          APK_EXT=$(echo "$SIGNED_APK" | grep -o '\.[^.]*$')
+          NEW_APK_PATH="$APK_DIR/${{ env.APK_NAME }}$APK_EXT"
+          mv "$SIGNED_APK" "$NEW_APK_PATH"
+          echo "FINAL_APK_PATH=$NEW_APK_PATH" >> $GITHUB_ENV
+      
+      # Create tag for manual builds
+      - name: Create Tag
+        if: (github.event.inputs.environment == 'staging' && github.event.inputs.build_type == 'staging') || (github.event.inputs.environment == 'prod' && github.event.inputs.build_type == 'release')
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          
+          # Check if tag already exists
+          if git rev-parse "${{ env.VERSION_TAG }}" >/dev/null 2>&1; then
+            echo "Tag ${{ env.VERSION_TAG }} already exists"
+            git tag -d "${{ env.VERSION_TAG }}" || true
+            git push origin :refs/tags/${{ env.VERSION_TAG }} || true
+          fi
+          
+          git tag -a "${{ env.VERSION_TAG }}" -m "${{ env.RELEASE_NAME }}"
+          git push origin "${{ env.VERSION_TAG }}"
+      
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ github.event.inputs.environment }}-${{ github.event.inputs.build_type }}-apk
+          name: ${{ env.APK_NAME }}
           path: |
             app/build/outputs/apk/**/*.apk
-            ${{ steps.sign_apk.outputs.signedReleaseFile }}
+            ${{ env.FINAL_APK_PATH || steps.sign_apk.outputs.signedReleaseFile }}
       
-      # Create GitHub Release (only for production release builds with version input)
+      # Create GitHub Release for both staging and prod
       - name: Create Release
-        if: github.event.inputs.environment == 'prod' && github.event.inputs.build_type == 'release'
+        if: (github.event.inputs.environment == 'staging' && github.event.inputs.build_type == 'staging') || (github.event.inputs.environment == 'prod' && github.event.inputs.build_type == 'release')
         uses: softprops/action-gh-release@v2
         with:
-          files: ${{ steps.sign_apk.outputs.signedReleaseFile }}
-          draft: true
-          name: Release v${{ github.event.inputs.version }}
-          tag_name: v${{ github.event.inputs.version }}
+          files: ${{ env.FINAL_APK_PATH || steps.sign_apk.outputs.signedReleaseFile }}
+          draft: ${{ github.event.inputs.environment == 'staging' }}
+          prerelease: ${{ github.event.inputs.environment == 'staging' }}
+          name: ${{ env.RELEASE_NAME }}
+          tag_name: ${{ env.VERSION_TAG }}
           body: |
-            ## 🚀 Release v${{ github.event.inputs.version }}
+            ## 🚀 ${{ env.RELEASE_NAME }}
             
             ### What's New
             - Bug fixes and improvements
             - Performance optimizations
             
             ### Build Information
-            - Environment: Production
-            - Build Type: Release
-            - Version: ${{ github.event.inputs.version }}
+            - Environment: ${{ github.event.inputs.environment == 'staging' && 'Staging' || 'Production' }}
+            - Build Type: ${{ github.event.inputs.build_type }}
+            - Version: ${{ github.event.inputs.version }}${{ github.event.inputs.environment == 'staging' && '-rc' || '' }}
             
             ### Installation
             Download and install the APK file on your Android device.
             Make sure to enable "Install from unknown sources" in your device settings.
+            
+            ${{ github.event.inputs.environment == 'staging' && '⚠️ **This is a release candidate for testing purposes.**' || '' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -174,6 +216,28 @@ jobs:
           echo "KEYSTORE_PASSWORD=${{ secrets.KEY_STORE_PASSWORD }}" >> $GITHUB_ENV
           echo "KEY_ALIAS=${{ secrets.KEY_ALIAS }}" >> $GITHUB_ENV
           echo "KEY_PASSWORD=${{ secrets.KEY_PASSWORD }}" >> $GITHUB_ENV
+          
+          # Extract version from tag (remove 'v' prefix and any '-rc' suffix)
+          if [[ "${{ github.ref_name }}" =~ ^v([0-9]+\.[0-9]+\.[0-9]+) ]]; then
+            VERSION="${BASH_REMATCH[1]}"
+          else
+            VERSION="${{ github.ref_name }}"
+          fi
+          
+          # Set version tag and naming based on environment and tag
+          if [[ "${{ github.ref_name }}" =~ -rc$ ]] && [ "${{ matrix.environment }}" = "staging" ]; then
+            echo "VERSION_TAG=${{ github.ref_name }}" >> $GITHUB_ENV
+            echo "RELEASE_NAME=Release Candidate ${{ github.ref_name }}" >> $GITHUB_ENV
+            echo "APK_NAME=karage-app-${VERSION}-rc-${{ matrix.environment }}-${{ matrix.build_type }}" >> $GITHUB_ENV
+          elif [ "${{ matrix.environment }}" = "prod" ] && [[ ! "${{ github.ref_name }}" =~ -rc$ ]]; then
+            echo "VERSION_TAG=${{ github.ref_name }}" >> $GITHUB_ENV
+            echo "RELEASE_NAME=Release ${{ github.ref_name }}" >> $GITHUB_ENV
+            echo "APK_NAME=karage-app-${VERSION}-${{ matrix.environment }}-${{ matrix.build_type }}" >> $GITHUB_ENV
+          else
+            echo "VERSION_TAG=${{ github.ref_name }}" >> $GITHUB_ENV
+            echo "RELEASE_NAME=Build ${{ github.ref_name }}" >> $GITHUB_ENV
+            echo "APK_NAME=karage-app-${VERSION}-${{ matrix.environment }}-${{ matrix.build_type }}" >> $GITHUB_ENV
+          fi
                 
       - name: Build APK
         run: |
@@ -203,36 +267,50 @@ jobs:
           # Run basic verification that the APK is valid
           $ANDROID_HOME/build-tools/35.0.0/apksigner verify --verbose $APK_PATH
       
+      # Rename APK with proper naming convention
+      - name: Rename APK
+        if: matrix.build_type == 'release' || matrix.build_type == 'staging'
+        run: |
+          SIGNED_APK="${{ steps.sign_apk.outputs.signedReleaseFile }}"
+          APK_DIR=$(dirname "$SIGNED_APK")
+          APK_EXT=$(echo "$SIGNED_APK" | grep -o '\.[^.]*$')
+          NEW_APK_PATH="$APK_DIR/${{ env.APK_NAME }}$APK_EXT"
+          mv "$SIGNED_APK" "$NEW_APK_PATH"
+          echo "FINAL_APK_PATH=$NEW_APK_PATH" >> $GITHUB_ENV
+      
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.environment }}-${{ matrix.build_type }}-apk
+          name: ${{ env.APK_NAME }}
           path: |
             app/build/outputs/apk/**/*.apk
-            ${{ steps.sign_apk.outputs.signedReleaseFile }}
+            ${{ env.FINAL_APK_PATH || steps.sign_apk.outputs.signedReleaseFile }}
       
-      # Create GitHub Release (only for production release builds with tags)
+      # Create GitHub Release for tag-based builds
       - name: Create Release
-        if: startsWith(github.ref, 'refs/tags/') && matrix.environment == 'prod' && matrix.build_type == 'release'
+        if: startsWith(github.ref, 'refs/tags/') && ((matrix.environment == 'staging' && matrix.build_type == 'staging' && endsWith(github.ref_name, '-rc')) || (matrix.environment == 'prod' && matrix.build_type == 'release' && !endsWith(github.ref_name, '-rc')))
         uses: softprops/action-gh-release@v2
         with:
-          files: ${{ steps.sign_apk.outputs.signedReleaseFile }}
-          draft: true
-          name: Release ${{ github.ref_name }}
+          files: ${{ env.FINAL_APK_PATH || steps.sign_apk.outputs.signedReleaseFile }}
+          draft: ${{ endsWith(github.ref_name, '-rc') }}
+          prerelease: ${{ endsWith(github.ref_name, '-rc') }}
+          name: ${{ env.RELEASE_NAME }}
           body: |
-            ## 🚀 Release ${{ github.ref_name }}
+            ## 🚀 ${{ env.RELEASE_NAME }}
             
             ### What's New
             - Bug fixes and improvements
             - Performance optimizations
             
             ### Build Information
-            - Environment: Production
-            - Build Type: Release
+            - Environment: ${{ matrix.environment == 'staging' && 'Staging' || 'Production' }}
+            - Build Type: ${{ matrix.build_type }}
             - Version: ${{ github.ref_name }}
             
             ### Installation
             Download and install the APK file on your Android device.
             Make sure to enable "Install from unknown sources" in your device settings.
+            
+            ${{ endsWith(github.ref_name, '-rc') && '⚠️ **This is a release candidate for testing purposes.**' || '' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

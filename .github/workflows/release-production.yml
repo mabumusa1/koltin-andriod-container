@@ -1,0 +1,157 @@
+name: Production Release
+
+permissions:
+  contents: write
+  actions: read
+  checks: write
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g. 1.0.0) - should match a tested RC'
+        required: true
+      staging_tag:
+        description: 'Staging RC tag that was tested (e.g. v1.0.0-rc)'
+        required: false
+      create_release:
+        description: 'Create GitHub Release'
+        required: true
+        default: true
+        type: boolean
+
+jobs:
+  build-production:
+    name: Build Production Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'microsoft'
+          cache: gradle
+          
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+      
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+      
+      - name: Set environment variables
+        run: |
+          echo "ENVIRONMENT=prod" >> $GITHUB_ENV
+          echo "BUILD_TYPE=release" >> $GITHUB_ENV
+          echo "VERSION_TAG=v${{ github.event.inputs.version }}" >> $GITHUB_ENV
+          echo "RELEASE_NAME=Release v${{ github.event.inputs.version }}" >> $GITHUB_ENV
+          echo "APK_NAME=karage-app-${{ github.event.inputs.version }}-prod-release" >> $GITHUB_ENV
+          echo "KEYSTORE_PASSWORD=${{ secrets.KEY_STORE_PASSWORD }}" >> $GITHUB_ENV
+          echo "KEY_ALIAS=${{ secrets.KEY_ALIAS }}" >> $GITHUB_ENV
+          echo "KEY_PASSWORD=${{ secrets.KEY_PASSWORD }}" >> $GITHUB_ENV
+      
+      - name: Validate staging RC (if provided)
+        if: github.event.inputs.staging_tag != ''
+        run: |
+          echo "Validating that staging RC ${{ github.event.inputs.staging_tag }} exists..."
+          if ! git rev-parse "${{ github.event.inputs.staging_tag }}" >/dev/null 2>&1; then
+            echo "❌ Staging RC tag ${{ github.event.inputs.staging_tag }} does not exist!"
+            echo "Please ensure the staging RC was created and tested first."
+            exit 1
+          fi
+          echo "✅ Staging RC tag found"
+                
+      - name: Build APK
+        run: |
+          echo "Building variant: prodRelease"
+          ./gradlew assembleProdRelease --no-configuration-cache
+      
+      - name: Sign APK
+        uses: r0adkll/sign-android-release@v1.0.4
+        id: sign_apk
+        with:
+          releaseDirectory: app/build/outputs/apk/prod/release
+          signingKeyBase64: ${{ secrets.SIGNING_KEY }}
+          alias: ${{ secrets.KEY_ALIAS }}
+          keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
+          keyPassword: ${{ secrets.KEY_PASSWORD }}
+        env:
+          BUILD_TOOLS_VERSION: "35.0.0"
+      
+      # Verify the signed APK
+      - name: Verify APK
+        run: |
+          APK_PATH=${{ steps.sign_apk.outputs.signedReleaseFile }}
+          echo "Verifying APK: $APK_PATH"
+          $ANDROID_HOME/build-tools/35.0.0/apksigner verify --verbose $APK_PATH
+      
+      # Rename APK with proper naming convention
+      - name: Rename APK
+        run: |
+          SIGNED_APK="${{ steps.sign_apk.outputs.signedReleaseFile }}"
+          APK_DIR=$(dirname "$SIGNED_APK")
+          APK_EXT=$(echo "$SIGNED_APK" | grep -o '\.[^.]*$')
+          NEW_APK_PATH="$APK_DIR/${{ env.APK_NAME }}$APK_EXT"
+          mv "$SIGNED_APK" "$NEW_APK_PATH"
+          echo "FINAL_APK_PATH=$NEW_APK_PATH" >> $GITHUB_ENV
+      
+      # Create tag for production release
+      - name: Create Tag
+        if: github.event.inputs.create_release == 'true'
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          
+          # Check if tag already exists
+          if git rev-parse "${{ env.VERSION_TAG }}" >/dev/null 2>&1; then
+            echo "❌ Production tag ${{ env.VERSION_TAG }} already exists!"
+            echo "Production releases should not overwrite existing tags."
+            echo "Please use a different version number."
+            exit 1
+          fi
+          
+          git tag -a "${{ env.VERSION_TAG }}" -m "${{ env.RELEASE_NAME }}"
+          git push origin "${{ env.VERSION_TAG }}"
+      
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.APK_NAME }}
+          path: ${{ env.FINAL_APK_PATH }}
+      
+      # Create GitHub Release for production
+      - name: Create Release
+        if: github.event.inputs.create_release == 'true'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ env.FINAL_APK_PATH }}
+          draft: false
+          prerelease: false
+          name: ${{ env.RELEASE_NAME }}
+          tag_name: ${{ env.VERSION_TAG }}
+          body: |
+            ## 🚀 ${{ env.RELEASE_NAME }}
+            
+            ### What's New
+            - Bug fixes and improvements
+            - Performance optimizations
+            
+            ### Build Information
+            - Environment: Production
+            - Build Type: Release
+            - Version: ${{ github.event.inputs.version }}
+            ${{ github.event.inputs.staging_tag != '' && format('- Tested RC: {0}', github.event.inputs.staging_tag) || '' }}
+            
+            ### Installation
+            Download and install the APK file on your Android device.
+            Make sure to enable "Install from unknown sources" in your device settings.
+            
+            ### Quality Assurance
+            ✅ This release has been thoroughly tested and is ready for production use.
+            ${{ github.event.inputs.staging_tag != '' && '✅ Based on tested release candidate' || '⚠️ Released without staging RC validation' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
