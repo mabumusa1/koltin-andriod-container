@@ -31,7 +31,9 @@ jobs:
         uses: android-actions/setup-android@v3
 
       - name: Run Unit Tests
-        run: ./gradlew testDebugUnitTest --no-configuration-cache
+        run: |
+          # Run unit tests for both dev and prod debug variants
+          ./gradlew testDevDebugUnitTest testProdDebugUnitTest --no-configuration-cache
       
       - name: Generate Code Coverage Report
         if: success()

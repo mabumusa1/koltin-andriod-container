@@ -19,7 +19,7 @@ android {
         versionName = "1.0.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        
+
         // Add these for production
         vectorDrawables.useSupportLibrary = true
     }
@@ -42,14 +42,14 @@ android {
             isMinifyEnabled = false
             isShrinkResources = false
             enableUnitTestCoverage = false
-            
+
             buildConfigField("String", "API_BASE_URL", "\"https://api-dev.karage.app/\"")
             buildConfigField("boolean", "ENABLE_LOGGING", "true")
             buildConfigField("String", "BUILD_TYPE", "\"DEBUG\"")
-            
+
             resValue("string", "app_name", "Karage Debug")
         }
-        
+
         create("staging") {
             applicationIdSuffix = ".staging"
             versionNameSuffix = "-staging"
@@ -57,16 +57,16 @@ android {
             isMinifyEnabled = true
             isShrinkResources = true
             signingConfig = signingConfigs.getByName("release")
-            
+
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
             )
-            
+
             buildConfigField("String", "API_BASE_URL", "\"https://api-staging.karage.app/\"")
             buildConfigField("boolean", "ENABLE_LOGGING", "true")
             buildConfigField("String", "BUILD_TYPE", "\"STAGING\"")
-            
+
             resValue("string", "app_name", "Karage Staging")
         }
 
@@ -75,16 +75,16 @@ android {
             isMinifyEnabled = true
             isShrinkResources = true
             signingConfig = signingConfigs.getByName("release")
-            
+
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
             )
-            
+
             buildConfigField("String", "API_BASE_URL", "\"https://api.karage.app/\"")
             buildConfigField("boolean", "ENABLE_LOGGING", "false")
             buildConfigField("String", "BUILD_TYPE", "\"RELEASE\"")
-            
+
             resValue("string", "app_name", "Karage")
         }
     }
@@ -96,14 +96,14 @@ android {
             dimension = "environment"
             applicationIdSuffix = ".dev"
             versionNameSuffix = "-dev"
-            
+
             buildConfigField("String", "ENVIRONMENT", "\"DEVELOPMENT\"")
             buildConfigField("String", "API_VERSION", "\"v1\"")
         }
-        
+
         create("prod") {
             dimension = "environment"
-            
+
             buildConfigField("String", "ENVIRONMENT", "\"PRODUCTION\"")
             buildConfigField("String", "API_VERSION", "\"v1\"")
         }
@@ -194,7 +194,7 @@ tasks.register<JacocoReport>("jacocoTestReport") {
     group = "reporting"
     description = "Generate Jacoco coverage reports for the debug build."
 
-    dependsOn("testDebugUnitTest")
+    dependsOn("testDevDebugUnitTest")
 
     reports {
         xml.required.set(true)
@@ -211,18 +211,18 @@ tasks.register<JacocoReport>("jacocoTestReport") {
             "android/**/*.*",
         )
 
-    val debugTree =
-        fileTree("${layout.buildDirectory.get()}/tmp/kotlin-classes/debug") {
+    val devDebugTree =
+        fileTree("${layout.buildDirectory.get()}/tmp/kotlin-classes/devDebug") {
             exclude(fileFilter)
         }
 
     val mainSrc = "${project.projectDir}/src/main/kotlin"
 
     sourceDirectories.setFrom(files(mainSrc))
-    classDirectories.setFrom(files(debugTree))
+    classDirectories.setFrom(files(devDebugTree))
     executionData.setFrom(
         fileTree("${layout.buildDirectory.get()}") {
-            include("jacoco/testDebugUnitTest.exec")
+            include("jacoco/testDevDebugUnitTest.exec")
         },
     )
 }

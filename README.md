@@ -116,11 +116,11 @@ This project includes a comprehensive testing strategy with:
 # Run all instrumented tests on connected device
 ./gradlew connectedAndroidTest
 
-# Run specific test class
-./gradlew testDebugUnitTest --tests "karage.app.CalculatorTest"
+# Run specific test class (choose variant: devDebug, prodDebug, etc.)
+./gradlew testDevDebugUnitTest --tests "karage.app.CalculatorTest"
 
 # Run specific test method
-./gradlew testDebugUnitTest --tests "karage.app.CalculatorTest.additionIsCorrect"
+./gradlew testDevDebugUnitTest --tests "karage.app.CalculatorTest.additionIsCorrect"
 ```
 
 ### Test Coverage
@@ -162,14 +162,14 @@ Coverage reports are generated in HTML format and can be found at:
 Lint baselines allow you to establish a record of existing lint issues while ensuring no new issues are introduced. This is useful for legacy projects or when implementing stricter lint rules gradually.
 
 ```bash
-# Create a baseline file (captures current issues)
-./gradlew lintDebug -Dlint.baselines.continue=true
+# Create a baseline file (captures current issues) - using dev debug variant
+./gradlew lintDevDebug -Dlint.baselines.continue=true
 
 # Run lint with existing baseline (only reports new issues)
-./gradlew lintDebug
+./gradlew lintDevDebug lintProdDebug
 
 # Show all issues including those in baseline
-./gradlew lintDebug -Dlint.ignoreBaseline=true
+./gradlew lintDevDebug -Dlint.ignoreBaseline=true
 
 # Update the baseline after fixing some issues
 ./gradlew updateLintBaseline
