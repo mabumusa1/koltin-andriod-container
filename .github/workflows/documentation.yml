@@ -53,7 +53,7 @@ jobs:
       - name: Upload to GitHub Pages
         uses: actions/upload-pages-artifact@v3
         with:
-          path: app/build/dokka-module/html/module/
+          path: app/build/dokka-module/html/module
           
       - name: Deploy to GitHub Pages
         id: deployment
