@@ -32,19 +32,117 @@ on:
           - release
 
 jobs:
+  # Manual build job (workflow_dispatch)
+  build-manual:
+    name: Build APK (Manual)
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'microsoft'
+          cache: gradle
+          
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+      
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+      
+      - name: Set environment variables
+        run: |
+          echo "ENVIRONMENT=${{ github.event.inputs.environment }}" >> $GITHUB_ENV
+          echo "BUILD_TYPE=${{ github.event.inputs.build_type }}" >> $GITHUB_ENV
+          echo "KEYSTORE_PASSWORD=${{ secrets.KEY_STORE_PASSWORD }}" >> $GITHUB_ENV
+          echo "KEY_ALIAS=${{ secrets.KEY_ALIAS }}" >> $GITHUB_ENV
+          echo "KEY_PASSWORD=${{ secrets.KEY_PASSWORD }}" >> $GITHUB_ENV
+                
+      - name: Build APK
+        run: |
+          BUILD_VARIANT="${{ github.event.inputs.environment }}$(echo ${{ github.event.inputs.build_type }} | sed 's/./\U&/')"
+          echo "Building variant: $BUILD_VARIANT"
+          ./gradlew assemble${BUILD_VARIANT} --no-configuration-cache
+      
+      - name: Sign APK (Release builds only)
+        if: github.event.inputs.build_type == 'release' || github.event.inputs.build_type == 'staging'
+        uses: r0adkll/sign-android-release@v1.0.4
+        id: sign_apk
+        with:
+          releaseDirectory: app/build/outputs/apk/${{ github.event.inputs.environment }}/${{ github.event.inputs.build_type }}
+          signingKeyBase64: ${{ secrets.SIGNING_KEY }}
+          alias: ${{ secrets.KEY_ALIAS }}
+          keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
+          keyPassword: ${{ secrets.KEY_PASSWORD }}
+        env:
+          BUILD_TOOLS_VERSION: "35.0.0"
+      
+      # Verify the signed APK (Release builds only)
+      - name: Verify APK
+        if: github.event.inputs.build_type == 'release' || github.event.inputs.build_type == 'staging'
+        run: |
+          APK_PATH=${{ steps.sign_apk.outputs.signedReleaseFile }}
+          echo "Verifying APK: $APK_PATH"
+          # Run basic verification that the APK is valid
+          $ANDROID_HOME/build-tools/35.0.0/apksigner verify --verbose $APK_PATH
+      
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ github.event.inputs.environment }}-${{ github.event.inputs.build_type }}-apk
+          path: |
+            app/build/outputs/apk/**/*.apk
+            ${{ steps.sign_apk.outputs.signedReleaseFile }}
+      
+      # Create GitHub Release (only for production release builds with version input)
+      - name: Create Release
+        if: github.event.inputs.environment == 'prod' && github.event.inputs.build_type == 'release'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ steps.sign_apk.outputs.signedReleaseFile }}
+          draft: true
+          name: Release v${{ github.event.inputs.version }}
+          tag_name: v${{ github.event.inputs.version }}
+          body: |
+            ## 🚀 Release v${{ github.event.inputs.version }}
+            
+            ### What's New
+            - Bug fixes and improvements
+            - Performance optimizations
+            
+            ### Build Information
+            - Environment: Production
+            - Build Type: Release
+            - Version: ${{ github.event.inputs.version }}
+            
+            ### Installation
+            Download and install the APK file on your Android device.
+            Make sure to enable "Install from unknown sources" in your device settings.
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # Automatic build job (tags/branches)
   build-release:
     name: Build Release APK
     runs-on: ubuntu-latest
+    if: github.event_name != 'workflow_dispatch'
     strategy:
       matrix:
-        environment: [dev, prod]
-        build_type: [debug, staging, release]
-        exclude:
-          # Exclude combinations that don't make sense
+        include:
           - environment: dev
-            build_type: release
-          - environment: prod
             build_type: debug
+          - environment: dev
+            build_type: staging
+          - environment: prod
+            build_type: staging
+          - environment: prod
+            build_type: release
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
