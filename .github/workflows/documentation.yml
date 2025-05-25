@@ -38,13 +38,13 @@ jobs:
         uses: android-actions/setup-android@v3
       
       - name: Generate Dokka documentation
-        run: ./gradlew dokkaHtml --no-configuration-cache
+        run: ./gradlew dokkaGenerateModuleHtml --no-configuration-cache
       
       - name: Upload documentation
         uses: actions/upload-artifact@v4
         with:
           name: api-documentation
-          path: app/build/dokka/html/
+          path: app/build/dokka-module/html/
       
       # Deploy to GitHub Pages using the official action
       - name: Setup Pages
@@ -53,7 +53,7 @@ jobs:
       - name: Upload to GitHub Pages
         uses: actions/upload-pages-artifact@v3
         with:
-          path: app/build/dokka/html/
+          path: app/build/dokka-module/html/
           
       - name: Deploy to GitHub Pages
         id: deployment

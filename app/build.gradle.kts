@@ -53,7 +53,7 @@ android {
         create("staging") {
             applicationIdSuffix = ".staging"
             versionNameSuffix = "-staging"
-            isDebuggable = true
+            isDebuggable = false
             isMinifyEnabled = true
             isShrinkResources = true
             signingConfig = signingConfigs.getByName("release")
@@ -240,5 +240,22 @@ tasks.withType<io.gitlab.arturbosch.detekt.Detekt>().configureEach {
         xml.required.set(true)
         txt.required.set(false)
         sarif.required.set(false)
+    }
+}
+
+// Dokka V2 configuration for API documentation
+dokka {
+    moduleName.set("Karage App")
+    moduleVersion.set(android.defaultConfig.versionName)
+    
+    dokkaSourceSets.configureEach {
+        displayName.set("Main")
+        
+        // Include source links to GitHub
+        sourceLink {
+            localDirectory.set(file("src/main/kotlin"))
+            remoteUrl.set(uri("https://github.com/your-username/andriodapp/tree/main/app/src/main/kotlin"))
+            remoteLineSuffix.set("#L")
+        }
     }
 }
