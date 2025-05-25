@@ -3,6 +3,105 @@
 
     <issue
         id="UnusedResources"
+        message="The resource `R.string.first_number` appears to be unused"
+        errorLine1="    &lt;string name=&quot;first_number&quot;>First Number&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="7"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.second_number` appears to be unused"
+        errorLine1="    &lt;string name=&quot;second_number&quot;>Second Number&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="8"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.result` appears to be unused"
+        errorLine1="    &lt;string name=&quot;result&quot;>Result&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="9"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.add` appears to be unused"
+        errorLine1="    &lt;string name=&quot;add&quot;>Add&lt;/string>"
+        errorLine2="            ~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="10"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.subtract` appears to be unused"
+        errorLine1="    &lt;string name=&quot;subtract&quot;>Subtract&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="11"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.multiply` appears to be unused"
+        errorLine1="    &lt;string name=&quot;multiply&quot;>Multiply&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="12"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.divide` appears to be unused"
+        errorLine1="    &lt;string name=&quot;divide&quot;>Divide&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="13"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.error_invalid_input` appears to be unused"
+        errorLine1="    &lt;string name=&quot;error_invalid_input&quot;>Please enter valid numbers&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="14"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.error_division_by_zero` appears to be unused"
+        errorLine1="    &lt;string name=&quot;error_division_by_zero&quot;>Cannot divide by zero&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="15"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
         message="The resource `R.style.Theme_KarageApp_NoActionBar` appears to be unused"
         errorLine1="    &lt;style name=&quot;Theme.KarageApp.NoActionBar&quot;>"
         errorLine2="           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
@@ -115,7 +214,7 @@
         errorLine2="                                      ~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/kotlin/karage/app/MainActivity.kt"
-            line="44"
+            line="43"
             column="39"/>
     </issue>
 
@@ -126,7 +225,7 @@
         errorLine2="                                       ~~~~~~~~">
         <location
             file="src/main/kotlin/karage/app/MainActivity.kt"
-            line="44"
+            line="43"
             column="40"/>
     </issue>
 

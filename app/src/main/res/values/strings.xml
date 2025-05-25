@@ -1,4 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">KarageApp</string>
+    <!-- Default app name - will be overridden by build variants -->
+    <string name="app_name">Karage</string>
+    
+    <!-- Common strings -->
+    <string name="first_number">First Number</string>
+    <string name="second_number">Second Number</string>
+    <string name="result">Result</string>
+    <string name="add">Add</string>
+    <string name="subtract">Subtract</string>
+    <string name="multiply">Multiply</string>
+    <string name="divide">Divide</string>
+    <string name="error_invalid_input">Please enter valid numbers</string>
+    <string name="error_division_by_zero">Cannot divide by zero</string>
 </resources>

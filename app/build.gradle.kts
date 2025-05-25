@@ -16,23 +16,96 @@ android {
         minSdk = 24
         targetSdk = 36
         versionCode = 1
-        versionName = "1.0"
+        versionName = "1.0.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        
+        // Add these for production
+        vectorDrawables.useSupportLibrary = true
+    }
+
+    signingConfigs {
+        create("release") {
+            // For CI/CD, these will be overridden by environment variables or secrets
+            storeFile = file("../release/karage-app-keystore.jks")
+            storePassword = System.getenv("KEYSTORE_PASSWORD") ?: "android123"
+            keyAlias = System.getenv("KEY_ALIAS") ?: "karage-app-key"
+            keyPassword = System.getenv("KEY_PASSWORD") ?: "android123"
+        }
     }
 
     buildTypes {
-        release {
+        debug {
+            applicationIdSuffix = ".debug"
+            versionNameSuffix = "-debug"
+            isDebuggable = true
             isMinifyEnabled = false
+            isShrinkResources = false
+            enableUnitTestCoverage = false
+            
+            buildConfigField("String", "API_BASE_URL", "\"https://api-dev.karage.app/\"")
+            buildConfigField("boolean", "ENABLE_LOGGING", "true")
+            buildConfigField("String", "BUILD_TYPE", "\"DEBUG\"")
+            
+            resValue("string", "app_name", "Karage Debug")
+        }
+        
+        create("staging") {
+            applicationIdSuffix = ".staging"
+            versionNameSuffix = "-staging"
+            isDebuggable = true
+            isMinifyEnabled = true
+            isShrinkResources = true
+            signingConfig = signingConfigs.getByName("release")
+            
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro",
+                "proguard-rules.pro"
             )
+            
+            buildConfigField("String", "API_BASE_URL", "\"https://api-staging.karage.app/\"")
+            buildConfigField("boolean", "ENABLE_LOGGING", "true")
+            buildConfigField("String", "BUILD_TYPE", "\"STAGING\"")
+            
+            resValue("string", "app_name", "Karage Staging")
         }
-        debug {
-            // Disable built-in coverage to avoid configuration cache issues
-            // We'll use JaCoCo plugin manually
-            enableUnitTestCoverage = false
+
+        release {
+            isDebuggable = false
+            isMinifyEnabled = true
+            isShrinkResources = true
+            signingConfig = signingConfigs.getByName("release")
+            
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+            
+            buildConfigField("String", "API_BASE_URL", "\"https://api.karage.app/\"")
+            buildConfigField("boolean", "ENABLE_LOGGING", "false")
+            buildConfigField("String", "BUILD_TYPE", "\"RELEASE\"")
+            
+            resValue("string", "app_name", "Karage")
+        }
+    }
+
+    // Product flavors for different environments/markets
+    flavorDimensions += "environment"
+    productFlavors {
+        create("dev") {
+            dimension = "environment"
+            applicationIdSuffix = ".dev"
+            versionNameSuffix = "-dev"
+            
+            buildConfigField("String", "ENVIRONMENT", "\"DEVELOPMENT\"")
+            buildConfigField("String", "API_VERSION", "\"v1\"")
+        }
+        
+        create("prod") {
+            dimension = "environment"
+            
+            buildConfigField("String", "ENVIRONMENT", "\"PRODUCTION\"")
+            buildConfigField("String", "API_VERSION", "\"v1\"")
         }
     }
 
@@ -78,6 +151,7 @@ android {
 
     buildFeatures {
         viewBinding = true
+        buildConfig = true
     }
 
     testOptions {
